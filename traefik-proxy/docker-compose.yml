@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=you@example.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/traefik.yml:/traefik.yml:ro"
+      - "./traefik/dynamic.yml:/dynamic.yml:ro"
+      - "./data:/letsencrypt"
+
+  uptime:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime
+    labels:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik.enable=true"
+      - "traefik.http.routers.kuma.rule=Host(`uptime.localhost`)"
+      - "traefik.http.routers.kuma.entrypoints=web"
+      - "traefik.http.services.kuma.loadbalancer.server.port=3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  uptime-kuma-data:
