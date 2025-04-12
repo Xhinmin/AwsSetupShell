@@ -2,44 +2,39 @@
 
 set -e
 
-# 更新系統套件
-sudo yum update -y
+echo "==== 更新系統 ===="
+sudo dnf update -y
 
 echo "==== 安裝 Docker ===="
-sudo yum install -y docker
+sudo dnf install -y docker
 
-# 啟動 Docker 並設為開機自動啟動
-sudo systemctl start docker
-sudo systemctl enable docker
-
-# 將使用者加入 docker 群組
+sudo systemctl enable --now docker
 sudo usermod -aG docker $USER
 
-echo "Docker 安裝完成。"
-
-echo "==== 關閉 Swap（K8s 需要）===="
+echo "==== 關閉 Swap（Kubernetes 要求）===="
 sudo swapoff -a
 sudo sed -i '/ swap / s/^/#/' /etc/fstab
 
-echo "==== 設定 Kubernetes 套件倉庫 ===="
+echo "==== 關閉 SELinux（K8s 相容性）===="
+sudo setenforce 0 || true
+sudo sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+
+echo "==== 設定 Kubernetes 官方套件倉庫 ===="
+sudo mkdir -p /etc/yum.repos.d
+
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
 enabled=1
 gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
 EOF
 
-sudo yum install -y kubelet kubeadm kubectl
-sudo systemctl enable kubelet
-sudo systemctl start kubelet
+echo "==== 安裝 kubelet、kubeadm、kubectl ===="
+sudo dnf install -y kubelet kubeadm kubectl
+sudo systemctl enable --now kubelet
 
-echo "==== 關閉 SELinux（暫時關閉以避免問題）===="
-sudo setenforce 0
-sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-
-echo "==== 安裝完成！===="
-echo "請重新登出並登入以生效 docker 群組變更。"
-echo "接下來可以使用 'sudo kubeadm init' 初始化 Kubernetes master node。"
+echo "==== 安裝完成 ===="
+echo "請重新登出再登入以讓 docker 群組權限生效"
+echo "初始化 Kubernetes 可使用：sudo kubeadm init --pod-network-cidr=10.244.0.0/16"
