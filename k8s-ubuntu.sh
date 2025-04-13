@@ -5,10 +5,16 @@ set -e
 echo "==== 更新系統 ===="
 sudo apt update -y && sudo apt upgrade -y
 
-echo "==== 安裝 Docker ===="
-sudo apt install -y docker.io
-sudo systemctl enable --now docker
-sudo usermod -aG docker $USER
+echo "==== 安裝 Containerd ===="
+sudo apt install -y containerd
+# 初始化預設設定
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+# 修改 Cgroup driver 為 systemd（符合 kubelet）
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+
 
 echo "==== 關閉 Swap（Kubernetes 要求）===="
 sudo swapoff -a
@@ -44,4 +50,3 @@ kubectl get nodes
 kubectl get pods -A
 
 echo "==== 安裝完成 ===="
-echo "請重新登出再登入以讓 docker 群組權限生效"
