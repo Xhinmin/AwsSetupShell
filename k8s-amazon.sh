@@ -39,12 +39,14 @@ sudo systemctl enable --now kubelet
 echo "初始化 Kubernetes 可使用：sudo kubeadm init --pod-network-cidr=10.244.0.0/16"
 echo "==== 初始化 Kubernetes ===="
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
-echo "==== 初始化 Kubernetes ===="
+echo "==== 設定 kubectl ===="
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-
 echo "==== 設定 kubectl（以非 root 使用） ====" 
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+echo "等待 kubectl 初始化 (5秒)..."
+sleep 5
 
 echo "==== 安裝 Flannel 網路插件 ===="
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml

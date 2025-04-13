@@ -33,6 +33,9 @@ mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+echo "等待 kubectl 初始化 (5秒)..."
+sleep 5
+
 echo "==== 安裝 Flannel 網路插件 ===="
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
