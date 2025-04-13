@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 出錯即停
 set -e
 
 echo "==== 更新系統 ===="
@@ -35,6 +36,23 @@ echo "==== 安裝 kubelet、kubeadm、kubectl ===="
 sudo dnf install -y kubelet kubeadm kubectl
 sudo systemctl enable --now kubelet
 
+echo "初始化 Kubernetes 可使用：sudo kubeadm init --pod-network-cidr=10.244.0.0/16"
+echo "==== 初始化 Kubernetes ===="
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+echo "==== 初始化 Kubernetes ===="
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+echo "==== 設定 kubectl（以非 root 使用） ====" 
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+echo "==== 安裝 Flannel 網路插件 ===="
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+echo "驗證 Kubernetes 安裝"
+kubectl get nodes
+kubectl get pods -A
+
+
 echo "==== 安裝完成 ===="
 echo "請重新登出再登入以讓 docker 群組權限生效"
-echo "初始化 Kubernetes 可使用：sudo kubeadm init --pod-network-cidr=10.244.0.0/16"
