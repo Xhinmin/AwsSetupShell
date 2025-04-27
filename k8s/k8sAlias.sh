@@ -55,3 +55,10 @@ fi
 # 套用設定
 source "$SHELL_RC"
 echo "✅ 已套用 alias，現在可以開始使用如 'kgp'、'kgn' 等縮寫指令囉！"
+# 顯示警告，提醒使用者手動執行 source
+echo "❗ 若無效請手動執行以下命令來使 alias 生效："
+if [ -n "$ZSH_VERSION" ]; then
+    echo "source ~/.zshrc"
+elif [ -n "$BASH_VERSION" ]; then
+    echo "source ~/.bashrc"
+fi
