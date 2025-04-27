@@ -31,6 +31,20 @@ sudo apt install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 sudo systemctl enable --now kubelet
 
+# --- 這裡補上解決指令 ---
+# 載入 br_netfilter 模組
+sudo modprobe br_netfilter
+echo "br_netfilter" | sudo tee /etc/modules-load.d/br_netfilter.conf
+
+# 設定 bridge-nf-call-iptables 和 ip_forward
+sudo tee /etc/sysctl.d/k8s.conf <<EOF
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+# 套用 sysctl 設定
+sudo sysctl --system
+
 echo "==== 初始化 Kubernetes ===="
 sudo kubeadm init --pod-network-cidr=10.244.0.0/16
 
