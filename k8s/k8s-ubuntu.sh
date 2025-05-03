@@ -45,8 +45,10 @@ EOF
 # 套用 sysctl 設定
 sudo sysctl --system
 
-echo "==== 初始化 Kubernetes ===="
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+# 定義主節點名稱
+MAIN_NODE_NAME="master"
+echo "==== 初始化 Kubernetes (節點名稱: ${MAIN_NODE_NAME}) ===="
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --node-name=${MAIN_NODE_NAME}
 
 echo "==== 設定 kubectl ===="
 mkdir -p $HOME/.kube
@@ -62,5 +64,10 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 echo "==== 驗證 Kubernetes 安裝 ===="
 kubectl get nodes
 kubectl get pods -A
+
+# 移除控制平面節點的污點，允許在單節點集群上調度工作負載
+echo "==== 移除控制平面節點污點 ===="
+kubectl taint nodes ${MAIN_NODE_NAME} node-role.kubernetes.io/control-plane:NoSchedule-
+echo "已移除節點 ${MAIN_NODE_NAME} 的控制平面污點"
 
 echo "==== 安裝完成 ===="
