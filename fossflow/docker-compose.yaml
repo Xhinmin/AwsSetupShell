@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  fossflow:
+    build: FossFLOW/
+    image: my-custom-fossflow
+    container_name: fossflow
+    ports:
+      - "3000:3000"
+    volumes:
+      - fossflow:/opt/openflow
+
+volumes:
+  fossflow:

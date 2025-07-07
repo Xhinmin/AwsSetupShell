@@ -52,6 +52,9 @@
 - **PhotoStack** (`photostack/`)
   - 照片處理應用
 
+- **FossFLOW** (`FossFLOW/`)
+  - 圖形化流程設計工具
+
 ## 使用指南
 
 ### 系統配置
