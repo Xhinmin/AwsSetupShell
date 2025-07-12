@@ -61,7 +61,11 @@
 
 #### 安裝 Docker
 
-sudo docker.sh
+#### Docker (Amazon Linux)
+sudo ./docker-amazon.sh
+
+#### Docker (Ubuntu)
+sudo ./docker-ubuntu.sh
 
 #### 安裝 Kubernetes (Amazon Linux)
 
