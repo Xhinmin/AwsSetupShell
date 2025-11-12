@@ -64,7 +64,7 @@ REDIS_PORT_START=7001
 MASTER_COUNT=3
 REPLICA_PER_MASTER=1
 CLUSTER_NODES=$((MASTER_COUNT * (REPLICA_PER_MASTER + 1))) # 3 主 + 3 從
-IP_ADDRESS="127.0.0.1" # 在單機測試，使用本機迴路地址
+IP_ADDRESS=$(hostname -I | awk '{print $1}') # 獲取本機 IP 地址
 
 echo "✅ 2. 下載並編譯 Redis 穩定版..."
 mkdir -p "$REDIS_SRC_DIR"
@@ -165,4 +165,4 @@ echo "   for p in \$(seq $REDIS_PORT_START \$((REDIS_PORT_START + CLUSTER_NODES 
 echo "       redis-cli -p \$p shutdown nosave || true"
 echo "   done"
 echo "   # 或"
-echo "   pkill -f \"redis-server 127.0.0.1:700\""
+echo "   pkill -f \"redis-server $IP_ADDRESS:700\""
